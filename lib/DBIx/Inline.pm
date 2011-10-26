@@ -9,16 +9,16 @@ use base qw/
     DBIx::Inline::Result
 /;
 
-$DBIx::Inline::VERSION = '0.01';
+$DBIx::Inline::VERSION = '0.02';
 
 =head1 NAME
 
-DBIx::Inline - An inline alternative to DBIx::Core
+DBIx::Inline - DBIx::Class without the class. 
 
 =head1 DESCRIPTION
 
 An "inline" version to DBIx::Class, but by no means an alternative or its equal in any sense. Due to boredom and too many classes lying around 
-I put together DBIx::Inline to try and emulute some of DBIx::Core's cool features into one script. It's far from it, but 
+I put together DBIx::Inline to try and emulute some of DBIx::Class' cool features into one script. It's far from it, but 
 I believe it's an OK work in progress. You can still create accessors, but they are done on the fly using DBIx::Inline::ResultSet->method(name => sub { ... }).
 Results have ->method, but you need to include it in an iterator for it to work properly.. ie
 

@@ -11,7 +11,7 @@ use SQL::Abstract;
 our $sql = SQL::Abstract->new;
 use vars qw/$sql/;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 =head2 fetch
 
@@ -41,7 +41,7 @@ sub count {
 
 Returns all rows in a table as a resultset
 
-    my $rs = $schema->resultset('Users')->all;
+    my $rs = $schema->resultset('foo_table')->all;
 
 =cut
 
@@ -78,16 +78,10 @@ sub last {
 =head2 next
 
 A simple iterator to loop through a resultset. Each 
-returned result will be blessed as a Result.
-
-    # MySchema/Result/Table.pm
-
-    sub name { return shift->{result}->{name}; }
-
-    # test.pl
+returned result will be returned as a DBIx::Inline::Result.
 
     while(my $row = $result->next) {
-        print $row->name;
+        print $row->{name};
     }
 
 =cut
@@ -164,7 +158,6 @@ sub search {
         rs          => __PACKAGE__,
     };
     return bless $result, __PACKAGE__;
-    #return $result;
 }
 
 sub find {
@@ -172,19 +165,6 @@ sub find {
     if (scalar @$fields == 0) { push @$fields, '*'; }
     my ($stmt, @bind) = $sql->select($self->{table}, $fields, $c);
     my ($wstmt, @wbind) = $sql->where($c);
-#    my $r = {
-#        dbh    => $self->{dbh},
-#        result => $self->{dbh}->selectall_arrayref($stmt, { Slice => {} }, @bind)->[0],
-#        stmt   => $wstmt,
-#        bind   => \@wbind,
-#        #where  => $sql->generate('where', $c),
-#        where  => $c,
-#        table  => $self->{table},
-#        primary_key => $self->{primary_key},
-#        r       => 'DBIx::Inline::Result',
-#        rs      => __PACKAGE__,
-#    };
-
     my $result = $self->{dbh}->selectall_arrayref($stmt, { Slice => {} }, @bind)->[0];
     return bless $result, 'DBIx::Inline::Result';
 }
@@ -206,9 +186,7 @@ sub insert {
     my $sth = $self->{dbh}->prepare($stmt);
     my $result = $sth->execute(@bind);
 
-    # make sure it succeeded
     my $res = $self->search([], $c);
-#    $result =  $self->{dbh}->selectall_arrayref($sql->select($self->{table}, [], $c), { Slice => {} }, @bind);
     ($stmt, @bind) = $sql->select($self->{table}, ['*'], $c);
     
     if ($res->count) {

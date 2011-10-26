@@ -8,10 +8,9 @@ build_requires:
   Test::More: 0.88
   Test::WWW::Mechanize::Catalyst: 0
 configure_requires:
-  ExtUtils::MakeMaker: 0
-distribution_type: module
+  ExtUtils::MakeMaker: 6.42
 dynamic_config: 0
-generated_by: 'ExtUtils::MakeMaker version 6.57_05'
+generated_by: 'Module::Install version 1.01, CPAN::Meta::Converter version 2.112150'
 license: unknown
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -19,10 +18,12 @@ meta-spec:
 name: DBIx-Inline
 no_index:
   directory:
-    - t
     - inc
+    - t
 requires:
   Moose: 0
   namespace::autoclean: 0
   perl: 5.010
+resources:
+  repository: git://somewhere.com/myproject.git
 version: 0.01
