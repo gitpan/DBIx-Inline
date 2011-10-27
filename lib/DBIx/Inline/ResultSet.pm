@@ -6,12 +6,12 @@ DBIx::Inline::ResultSet - Methods for searching and altering tables
 
 =cut
 
-use SQL::Abstract;
+use SQL::Abstract::More;
 
-our $sql = SQL::Abstract->new;
+our $sql = SQL::Abstract::More->new;
 use vars qw/$sql/;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 =head2 fetch
 
@@ -41,7 +41,7 @@ sub count {
 
 Returns all rows in a table as a resultset
 
-    my $rs = $schema->resultset('foo_table')->all;
+    my $rs = $schema->resultset('Users')->all;
 
 =cut
 
@@ -78,7 +78,7 @@ sub last {
 =head2 next
 
 A simple iterator to loop through a resultset. Each 
-returned result will be returned as a DBIx::Inline::Result.
+returned result will be blessed as a Result.
 
     while(my $row = $result->next) {
         print $row->{name};
@@ -132,18 +132,35 @@ The second parameter is a hash of keys and values of what to search for.
     
     my $res = $resultset->search([], { -or => [ name => 'Test', name => 'Foo' ], status => 'active' });
 
+    my $res = $resultset->search([],
+        { status => 'active' },
+        {
+            order => ['id'],
+            limit => 10,
+        }
+    );
+
 =cut
 
 sub search {
-    my ($self, $fields, $c) = @_;
+    my ($self, $fields, $c, $order) = @_;
     if (scalar @$fields == 0) { push @$fields, '*'; }
     if (exists $self->{where}) {
         for (keys %{$self->{where}}) {
             $c->{$_} = $self->{where}->{$_};
         }
     }
-        
-    my ($stmt, @bind) = $sql->select($self->{table}, $fields, $c);
+
+    my %args;
+    $args{-columns} = $fields;
+    $args{-from} = $self->{table};
+    $args{-where} = $c;
+    $args{-order_by} = $order->{order} if exists $order->{order};
+    $args{-limit} = $order->{limit} if exists $order->{limit};
+    my ($stmt, @bind) = $sql->select(
+        %args,
+    );
+    #my ($stmt, @bind) = $sql->select($self->{table}, $fields, $c);
     my ($wstmt, @wbind) = $sql->where($c);
         
     my $result = {
@@ -157,13 +174,21 @@ sub search {
         r           => 'DBIx::Inline::Result',
         rs          => __PACKAGE__,
     };
+    $result->{limit} = $order->{limit}
+        if exists $order->{limit};
+
     return bless $result, __PACKAGE__;
 }
 
 sub find {
     my ($self, $fields, $c) = @_;
     if (scalar @$fields == 0) { push @$fields, '*'; }
-    my ($stmt, @bind) = $sql->select($self->{table}, $fields, $c);
+    my ($stmt, @bind) = $sql->select(
+        -columns => $fields,
+        -from    => $self->{table},
+        -where   => $c,
+        -limit   => 1
+    );
     my ($wstmt, @wbind) = $sql->where($c);
     my $result = $self->{dbh}->selectall_arrayref($stmt, { Slice => {} }, @bind)->[0];
     return bless $result, 'DBIx::Inline::Result';
@@ -171,7 +196,7 @@ sub find {
 
 =head2 insert
 
-Inserts a new record into the current resultset.
+Inserts a new record.
 
     my $insert = $resultset->insert({name => 'Foo', user => 'foo_bar', pass => 'baz'});
     if ($insert) { print "Added user!\n"; }
@@ -221,8 +246,17 @@ sub update {
 
     my ($stmt, @bind) = $sql->update($self->{table}, $fieldvals, $self->{where});
     my $sth = $self->{dbh}->prepare($stmt);
+    my %args;
+    $args{-columns} = ['*'],
+    $args{-from}    = $self->{table},
+    $args{-where}   = $self->{where},
+    $args{-limit}   = $self->{limit}
+        if exists $self->{limit};
+
     if ($sth->execute(@bind)) {
-        my ($sstmt, @sbind) = $sql->select($self->{table}, ['*'], $self->{where});
+        my ($sstmt, @sbind) = $sql->select(
+            %args,
+        );
         my $rs = {
             dbh    => $self->{dbh},
             where  => $self->{where},
@@ -269,7 +303,7 @@ Drops the records in the current search result
 sub delete {
     my ($self) = @_;
 
-    my ($stmt, @bind) = $sql->delete($self->{table}, $self->{where});
+    my ($stmt, @bind) = $sql->delete(-from => $self->{table}, -where => $self->{where});
 
     my $sth = $self->{dbh}->prepare($stmt);
     $sth->execute(@bind);

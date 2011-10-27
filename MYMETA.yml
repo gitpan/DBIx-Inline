@@ -1,16 +1,15 @@
 ---
-abstract: 'An inline alternative to DBIx::Core'
+abstract: 'DBIx::Class without the class.'
 author:
   - 'Brad Haywood <brad@geeksware.net>'
 build_requires:
-  Catalyst::Runtime: 5.80015
   ExtUtils::MakeMaker: 6.42
   Test::More: 0.88
-  Test::WWW::Mechanize::Catalyst: 0
 configure_requires:
-  ExtUtils::MakeMaker: 6.42
+  ExtUtils::MakeMaker: 0
+distribution_type: module
 dynamic_config: 0
-generated_by: 'Module::Install version 1.01, CPAN::Meta::Converter version 2.112150'
+generated_by: 'ExtUtils::MakeMaker version 6.57_05'
 license: unknown
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -18,12 +17,7 @@ meta-spec:
 name: DBIx-Inline
 no_index:
   directory:
-    - inc
     - t
-requires:
-  Moose: 0
-  namespace::autoclean: 0
-  perl: 5.010
-resources:
-  repository: git://somewhere.com/myproject.git
-version: 0.01
+    - inc
+requires: {}
+version: 0.03

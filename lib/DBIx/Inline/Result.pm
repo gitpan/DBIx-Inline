@@ -6,7 +6,7 @@ DBIx::Inline::Result - Class for DBIx::Inline results
 
 =cut 
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 sub method {
     my ($self, %args) = @_;

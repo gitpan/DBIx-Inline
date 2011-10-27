@@ -8,4 +8,4 @@ Makefile$
 Makefile.old$
 ^DBIx-Inline-
 ^.gitignore
-
+inc/

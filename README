@@ -1,10 +1,10 @@
 NAME
-    DBIx::Inline - An inline alternative to DBIx::Core
+    DBIx::Inline - DBIx::Class without the class.
 
 DESCRIPTION
     An "inline" version to DBIx::Class, but by no means an alternative or
     its equal in any sense. Due to boredom and too many classes lying around
-    I put together DBIx::Inline to try and emulute some of DBIx::Core's cool
+    I put together DBIx::Inline to try and emulute some of DBIx::Class' cool
     features into one script. It's far from it, but I believe it's an OK
     work in progress. You can still create accessors, but they are done on
     the fly using DBIx::Inline::ResultSet->method(name => sub { ... }).
@@ -30,15 +30,16 @@ SYNOPSIS
         my $rs = $schema->resultset('my_user_table');
     
         # create an accessor
-        $rs->method(is_active => sub {
-            return shift->search([], { account_status => 'active' });
+        $rs->method(not_active => sub {
+            return shift->search([], { account_status => 'disabled' }, { order => ['id'], limit => 5 });
         });
 
         # chain the custom resultset method with a core one (count)
-        print "Rows returned: " . $rs->is_active->count . "\n";
+        print "Rows returned: " . $rs->not_active->count . "\n";
 
-        # make them all active
-        $rs->update({account_status => 'active'});
+        # make the records in the resultset active
+        # will return a resultset with the updated data
+        my $new_rs = $rs->update({account_status => 'active'});
 
   connect
     Creates the Schema instance using the hash specified. Currently only dbi

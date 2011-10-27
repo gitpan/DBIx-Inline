@@ -1,6 +1,5 @@
 package DBIx::Inline;
 
-use 5.010;
 use DBI;
 
 use base qw/
@@ -9,11 +8,11 @@ use base qw/
     DBIx::Inline::Result
 /;
 
-$DBIx::Inline::VERSION = '0.02';
+$DBIx::Inline::VERSION = '0.03';
 
 =head1 NAME
 
-DBIx::Inline - DBIx::Class without the class. 
+DBIx::Inline - DBIx::Class without the class.
 
 =head1 DESCRIPTION
 
@@ -42,15 +41,16 @@ Check out the synopsis for more info on how to use DBIx::Inline.
     my $rs = $schema->resultset('my_user_table');
     
     # create an accessor
-    $rs->method(is_active => sub {
-        return shift->search([], { account_status => 'active' });
+    $rs->method(not_active => sub {
+        return shift->search([], { account_status => 'disabled' }, { order => ['id'], limit => 5 });
     });
 
     # chain the custom resultset method with a core one (count)
-    print "Rows returned: " . $rs->is_active->count . "\n";
+    print "Rows returned: " . $rs->not_active->count . "\n";
 
-    # make them all active
-    $rs->update({account_status => 'active'});
+    # make the records in the resultset active
+    # will return a resultset with the updated data
+    my $new_rs = $rs->update({account_status => 'active'});
 
 =cut
 
