@@ -8,7 +8,7 @@ use base qw/
     DBIx::Inline::Result
 /;
 
-$DBIx::Inline::VERSION = '0.04';
+$DBIx::Inline::VERSION = '0.05';
 
 =head1 NAME
 
@@ -19,13 +19,7 @@ DBIx::Inline - DBIx::Class without the class.
 An "inline" version to DBIx::Class, but by no means an alternative or its equal in any sense. Due to boredom and too many classes lying around 
 I put together DBIx::Inline to try and emulute some of DBIx::Class' cool features into one script. It's far from it, but 
 I believe it's an OK work in progress. You can still create accessors, but they are done on the fly using DBIx::Inline::ResultSet->method(name => sub { ... }).
-Results have ->method, but you need to include it in an iterator for it to work properly.. ie
-
-    while(my $row = $rs->next) {
-        $row->method(name => sub { return shift->{the_name_column}; });
-        print $row->name . "\n";
-    }
-
+Results have ->method, but the easiest way is to use $row->load_accessors, which will create methods for all of your result values (L<DBIx::Inline::Result>)
 Check out the synopsis for more info on how to use DBIx::Inline.
 
 =head1 SYNOPSIS
@@ -88,6 +82,53 @@ sub connect {
     my $dbhx = { dbh => $dbh, schema => $class };
     bless $dbhx, 'DBIx::Inline::Schema';
 }
+
+=head2 model
+
+This method needs a lot of work, but it functions at the moment. And I like it. 
+Instead of calling the connect method in every file, you can share the model by putting it in 
+inline.yml, like so.
+
+    # inline.yml
+    ---
+    Foo:
+      connect: 'SQLite:foo.db'
+    
+    AnotherSchema:
+      connect: 'Pg:host=localhost;dbname=foo'
+      user: 'myuser'
+      pass: 'pass'
+
+    # test.pl
+    package main;
+  
+    my $rs = main->model('AnotherSchema')->resultset('the_table');
+
+=cut
+
+sub model {
+    my ($class, $model) = @_;
+   
+    my $file = 'inline.yml'; 
+    die "Can't locate config '$file'\n"
+        if ! -f $file;
+    
+    use YAML::Syck;
+
+    my $yaml = LoadFile($file);
+    die "No such model '$model'\n"
+        if ! exists $yaml->{$model};
+    
+    my $dbh = DBI->connect(
+        'dbi:' . $yaml->{$model}->{connect},
+        $yaml->{$model}->{user}||undef,
+        $yaml->{$model}->{pass}||undef,
+    );
+
+    my $dbhx = { dbh => $dbh, schema => $class };
+    bless $dbhx, 'DBIx::Inline::Schema';
+}
+    
 
 =head1 AUTHOR
 

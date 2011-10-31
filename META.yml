@@ -23,4 +23,4 @@ requires:
   DBD::SQLite: 0
   DBI: 0
   SQL::Abstract::More: 0
-version: 0.04
+version: 0.05
