@@ -11,7 +11,7 @@ use SQL::Abstract::More;
 our $sql = SQL::Abstract::More->new;
 use vars qw/$sql/;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 =head2 fetch
 
