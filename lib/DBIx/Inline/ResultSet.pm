@@ -11,7 +11,7 @@ use SQL::Abstract::More;
 our $sql = SQL::Abstract::More->new;
 use vars qw/$sql/;
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 =head2 fetch
 
@@ -151,6 +151,11 @@ sub search {
         }
     }
 
+    $order->{rows}
+        if exists $self->{rows};
+    $order->{page}
+        if exists $self->{page};
+
     my %args;
     $args{-columns} = $fields;
     $args{-from} = $self->{table};
@@ -180,8 +185,11 @@ sub search {
         r           => 'DBIx::Inline::Result',
         rs          => __PACKAGE__,
     };
-    $result->{limit} = $order->{rows}
+    $result->{rows} = $order->{rows}
         if exists $order->{rows};
+    
+    $result->{page} = $order->{page}
+        if exists $order->{page};
 
     return bless $result, __PACKAGE__;
 }
@@ -197,6 +205,9 @@ sub find {
     );
     my ($wstmt, @wbind) = $sql->where($c);
     my $result = $self->{dbh}->selectall_arrayref($stmt, { Slice => {} }, @bind)->[0];
+    $result->{_where} = $c;
+    $result->{_from} = $self->{table};
+    $result->{_schema} = $self->schema;
     return bless $result, 'DBIx::Inline::Result';
 }
 
@@ -337,6 +348,12 @@ sub method {
     *$key = sub { $args{$key}->($self); };
     
     bless \*$key, 'DBIx::Inline::ResultSet';
+}
+
+sub schema {
+    my $self = shift;
+
+    return $self->{dbh};
 }
 
 1;

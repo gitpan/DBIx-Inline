@@ -6,7 +6,12 @@ DBIx::Inline::Result - Class for DBIx::Inline results
 
 =cut 
 
-our $VERSION = '0.07';
+use SQL::Abstract::More;
+our $sql = SQL::Abstract::More->new;
+
+use vars qw/$sql/;
+
+our $VERSION = '0.08';
 
 sub method {
     my ($self, %args) = @_;
@@ -31,13 +36,31 @@ subroutines.
     print $row->name . "\n";
     print $row->id . "\n";
 
+These accessors can also be used to set new values just by adding arguments.
+
+    $row->load_accessors;
+    $row->notes('Updated notes');
+    $row->name('My New Name');
+
 =cut
 
 sub load_accessors {
     my $self = shift;
     for (keys %$self) {
         my $result = $self->{$_};
-        *$_ = sub { return $result; };
+        my $table = $self->{_from};
+        my $where = $self->{_where};
+        my $schema = $self->{_schema};
+        my $key = $_;
+        *$_ = sub {
+            my ($self, $a) = @_;
+            if (! $a) { return $result; }
+            else {
+                my ($stmt, @bind) = $sql->update($table, { $key => $a }, $where);
+                my $sth = $schema->prepare($stmt);
+                $sth->execute(@bind);
+            }
+        };
         bless \*$_, 'DBIx::Inline::Result';
     }
 }
