@@ -26,7 +26,7 @@ SYNOPSIS
     
         # create an accessor
         $rs->method(not_active => sub {
-            return shift->search([], { account_status => 'disabled' }, { order => ['id'], limit => 5 });
+            return shift->search([], { account_status => 'disabled' }, { order => ['id'], rows => 5 });
         });
 
         # chain the custom resultset method with a core one (count)

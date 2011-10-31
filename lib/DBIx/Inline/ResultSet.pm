@@ -11,7 +11,7 @@ use SQL::Abstract::More;
 our $sql = SQL::Abstract::More->new;
 use vars qw/$sql/;
 
-our $VERSION = '0.05';
+our $VERSION = '0.07';
 
 =head2 fetch
 
@@ -136,7 +136,7 @@ The second parameter is a hash of keys and values of what to search for.
         { status => 'active' },
         {
             order => ['id'],
-            limit => 10,
+            rows => 10,
         }
     );
 
@@ -156,7 +156,13 @@ sub search {
     $args{-from} = $self->{table};
     $args{-where} = $c;
     $args{-order_by} = $order->{order} if exists $order->{order};
-    $args{-limit} = $order->{limit} if exists $order->{limit};
+    if (exists $order->{rows}) {
+        if (exists $order->{page}) {
+            $args{-page_size} = $order->{rows};
+        }
+        else { $args{-limit} = $order->{rows}; }
+    }
+    $args{-page_index} = $order->{page} if exists $order->{page};
     my ($stmt, @bind) = $sql->select(
         %args,
     );
@@ -174,8 +180,8 @@ sub search {
         r           => 'DBIx::Inline::Result',
         rs          => __PACKAGE__,
     };
-    $result->{limit} = $order->{limit}
-        if exists $order->{limit};
+    $result->{limit} = $order->{rows}
+        if exists $order->{rows};
 
     return bless $result, __PACKAGE__;
 }
@@ -250,8 +256,8 @@ sub update {
     $args{-columns} = ['*'],
     $args{-from}    = $self->{table},
     $args{-where}   = $self->{where},
-    $args{-limit}   = $self->{limit}
-        if exists $self->{limit};
+    $args{-limit}   = $self->{rows}
+        if exists $self->{rows};
 
     if ($sth->execute(@bind)) {
         my ($sstmt, @sbind) = $sql->select(

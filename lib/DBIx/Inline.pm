@@ -8,7 +8,7 @@ use base qw/
     DBIx::Inline::Result
 /;
 
-$DBIx::Inline::VERSION = '0.05';
+$DBIx::Inline::VERSION = '0.07';
 
 =head1 NAME
 
@@ -36,7 +36,7 @@ Check out the synopsis for more info on how to use DBIx::Inline.
     
     # create an accessor
     $rs->method(not_active => sub {
-        return shift->search([], { account_status => 'disabled' }, { order => ['id'], limit => 5 });
+        return shift->search([], { account_status => 'disabled' }, { order => ['id'], rows => 5 });
     });
 
     # chain the custom resultset method with a core one (count)
