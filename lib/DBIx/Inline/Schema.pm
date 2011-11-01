@@ -1,7 +1,7 @@
 package DBIx::Inline::Schema;
 use base 'DBIx::Inline::ResultSet';
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 
 sub resultset {
     my ($self, $table) = @_;

@@ -2,6 +2,7 @@ Changes
 gitignore
 lib/DBIx/Inline.pm
 lib/DBIx/Inline/Manual.pm
+lib/DBIx/Inline/Manual.pod
 lib/DBIx/Inline/Result.pm
 lib/DBIx/Inline/ResultSet.pm
 lib/DBIx/Inline/Schema.pm

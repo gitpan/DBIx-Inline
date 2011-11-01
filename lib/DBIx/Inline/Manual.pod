@@ -41,7 +41,35 @@ using B<model> like so.
   my $schema = main->model('MySchema');
   my $foo = main->model('FooSchema')->resultset('a_table')->all;
 
+You can also use B<config> to move the config somewhere else..
+
+  package main;
+  
+  use base 'DBIx::Class';
+  
+  main->config('/var/schemas/myschema.yml');
+  my $schema = main->model('Foo');
+
 We successfully now have two schemas running in the same package. The first one returns a schema, the second one chained a resultset onto it.
+
+The other way is connecting directly.
+
+B<Using the connect Schema method>
+
+Connecting directly is easy enough with B<connect>
+
+    my $schema = main->connect(
+        dbi     => 'Pg:host=localhost;dbname=foo',
+        user    => 'foo_user',
+        pass    => 'baz_pass',
+    );
+
+Obviously you can leave out the user and pass if you're using SQLite. And remember, you can chain a table to a schema.
+
+    my $schema = main->connect(
+        dbi => 'SQLite:/path/to/sqlite.db'
+    )->resultset('my_table');
+
 Once your schema has a resultset (at this point a resultset is just a table.. I need to rename the schema method from resultset to table, really), you 
 can start searching, finding, updating, etc. A resultset is just a class holding multiple records.
 
@@ -116,5 +144,10 @@ But what if you have long column names and want them shortened? No problem, use 
   );
 
   say $result->name; # instead of $result->{long_name_column}
+
+If you pass arguments after load_accessors to any of the subroutines it creates you will update their value.
+
+  $result->load_accesors;
+  $result->name('New Name');
 
 =cut

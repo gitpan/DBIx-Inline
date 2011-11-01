@@ -8,7 +8,8 @@ use base qw/
     DBIx::Inline::Result
 /;
 
-$DBIx::Inline::VERSION = '0.08';
+$DBIx::Inline::VERSION = '0.09';
+our $global = {};
 
 =head1 NAME
 
@@ -16,11 +17,13 @@ DBIx::Inline - DBIx::Class without the class.
 
 =head1 DESCRIPTION
 
-An "inline" version to DBIx::Class, but by no means an alternative or its equal in any sense. Due to boredom and too many classes lying around 
-I put together DBIx::Inline to try and emulute some of DBIx::Class' cool features into one script. It's far from it, but 
-I believe it's an OK work in progress. You can still create accessors, but they are done on the fly using DBIx::Inline::ResultSet->method(name => sub { ... }).
-Results have ->method, but the easiest way is to use $row->load_accessors, which will create methods for all of your result values (L<DBIx::Inline::Result>)
-Check out the synopsis for more info on how to use DBIx::Inline.
+This module is yet another interface to DBI. I liked how L<DBIx::Class> works, separating the results from the resultsets, the resultsets from the results and the schema from everything else. 
+It's tidy, easy to follow and works a treat. I also liked how you can "reuse" queries in resultsets and results without typing them out again and again. However, when I wanted to work on a small 
+project I found DBIx::Class a little slow and didn't want to keep setting up the classes for it to work. DBIx::Inline attempts follow the way DBIx::Class does things, but more "inline". You 
+still get the reusable queries, Results and ResultSets, but without all the classes to setup. You do lose a lot of functionality that you get with DBIx::Class, but that's not what DBIx::Inline is 
+really about. I wanted it to be faster and not hold your hand with everything, yet still be easy enough to use. 
+It's still possible to have accessors and Result/ResulSet methods, but they are created on-the-fly with B<method>. Also, you can automatically create all accessors for a result using B<load_accessors>.
+DBIx::Inline is great for small projects that do not require a lot of customisation, but for anything else I'd highly recommend B<DBIx::Class>.
 
 =head1 SYNOPSIS
 
@@ -67,6 +70,7 @@ If you're using SQLite there is no need to set user or pass.
 =cut
 
 sub connect {
+    use vars qw/$global/;
     my ($class, %args) = @_;
 
     my $dbh = DBI->connect(
@@ -87,7 +91,7 @@ sub connect {
 
 This method needs a lot of work, but it functions at the moment. And I like it. 
 Instead of calling the connect method in every file, you can share the model by putting it in 
-inline.yml, like so.
+inline.yml (which it looks for by default), or setting ->config.
 
     # inline.yml
     ---
@@ -107,9 +111,10 @@ inline.yml, like so.
 =cut
 
 sub model {
+    use vars qw/$global/;
     my ($class, $model) = @_;
    
-    my $file = 'inline.yml'; 
+    my $file = $global->{config}||'inline.yml'; 
     die "Can't locate config '$file'\n"
         if ! -f $file;
     
@@ -128,6 +133,34 @@ sub model {
     my $dbhx = { dbh => $dbh, schema => $class };
     bless $dbhx, 'DBIx::Inline::Schema';
 }
+
+=head2 config
+
+Sets the location of the configuration (file with the models. The Schema models.. not girls).
+This allows you to have the file anywhere on your system and you can rename it to anything.
+
+    # /var/schema/myschemas.yml
+    Foo:
+      connect: 'SQLite:/var/db/mydb.db'
+    
+    # /scripts/db.pl
+    package main;
+
+    use base 'DBIx::Inline';
+
+    main->config ('/var/schema/myschemas.yml');
+    my $schema = main->model('Foo');
+
+=cut
+
+sub config {
+    use vars qw/$global/;
+    my ($class, $file) = @_;
+    
+    if ($file) { $global->{config} = $file; }
+    else { return $global->{config}||0; }
+}
+
     
 
 =head1 AUTHOR
