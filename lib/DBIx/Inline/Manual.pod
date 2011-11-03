@@ -96,6 +96,43 @@ First up, let's perform a simple search.
   my $first = $table->all->first;
   my $last = $table->search([], { code => 5485 })->last;
 
+B<Inserting>
+
+Inserting requires nothing but a resultset. However, should you want to return the last inserted key with C<insert_id>, then you will 
+need to set a primary key. This is very handy when wanting to see if the query worked or not. You can set the primary key on its own or chain it with a resultset.
+
+  $rs->primary_key('id'); # on its own
+  $rs = main->model('Foo')->resultset('users')->primary_key('id')
+
+As you'll notice most methods are chainable. To actually insert a new row you just supply the required keys in a hash
+
+  # bring up the resultset
+  $rs = main->model('Foo')
+    ->resultset('users')
+    ->primary_key('id');
+
+  $rs->insert({
+      user     => 'test',
+      password => 'testpass',
+      name     => 'Mr Foo',
+  });
+
+  # technically, the user should be added, let's make sure we get a return ID
+  print "Added user with ID# " . $rs->insert_id
+      if $rs->insert_id;
+
+Inserting actually returns the successful new row as a Result. So you can do things like..
+
+  my $user = $rs->insert({
+      user => 'foo',
+      pass => 'fooness',
+      name => 'The Foo',
+  });
+
+  $user->load_accessors;
+  print "New Name: " . $user->name;
+  print "Last Insert Primary key: " . $rs->insert_id . "\n"; # or you could use $user->id
+
 B<What to do with ResultSet results>
 
 You can iterate through results using B<next>.

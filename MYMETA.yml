@@ -10,7 +10,7 @@ configure_requires:
 distribution_type: module
 dynamic_config: 0
 generated_by: 'ExtUtils::MakeMaker version 6.57_05'
-license: unknown
+license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
   version: 1.4
@@ -20,7 +20,6 @@ no_index:
     - t
     - inc
 requires:
-  DBD::SQLite: 0
   DBI: 0
   SQL::Abstract::More: 0
-version: 0.09
+version: 0.10

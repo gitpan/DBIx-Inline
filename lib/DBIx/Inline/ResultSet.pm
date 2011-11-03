@@ -11,7 +11,7 @@ use SQL::Abstract::More;
 our $sql = SQL::Abstract::More->new;
 use vars qw/$sql/;
 
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 
 =head2 fetch
 
@@ -78,7 +78,7 @@ sub last {
 =head2 next
 
 A simple iterator to loop through a resultset. Each 
-returned result will be blessed as a Result.
+returned result will be returned as a Result.
 
     while(my $row = $result->next) {
         print $row->{name};
@@ -116,7 +116,7 @@ sub primary_key {
     return 0 if ! $key;
     
     $self->{primary_key} = $key;
-    return 1;
+    return $self;
 }
 
 =head2 search
@@ -215,34 +215,33 @@ sub find {
 
 Inserts a new record.
 
-    my $insert = $resultset->insert({name => 'Foo', user => 'foo_bar', pass => 'baz'});
-    if ($insert) { print "Added user!\n"; }
-    else { print "Could not add user\n"; }
-
+    my $user = $resultset->insert({name => 'Foo', user => 'foo_bar', pass => 'baz'});
+    $user->load_accessors;
+    print $user->name . "\n";
+    print "Last inserted primary key: " . $resultset->insert_id . "\n";
 =cut
 
 sub insert {
     my ($self, $c) = @_;
-    
+   
+    die "Cannot insert without primary key\n"
+        if ! exists $self->{primary_key};
+ 
     my ($stmt, @bind) = $sql->insert($self->{table}, $c);
     my $sth = $self->{dbh}->prepare($stmt);
     my $result = $sth->execute(@bind);
 
     my $res = $self->search([], $c);
+    $c->{id} = $self->insert_id;
     ($stmt, @bind) = $sql->select($self->{table}, ['*'], $c);
     
     if ($res->count) {
-        my $rs = {
-            dbh    => $self->{dbh},
-            where  => $c,
-            table  => $self->{table},
-            result => $self->{dbh}->selectall_arrayref($stmt, { Slice => {} }, @bind),
-            primary_key => $self->{primary_key},
-            r       => 'DBIx::Inline::Result',
-            rs      => __PACKAGE__,
-        };
+        my $result = $self->{dbh}->selectall_arrayref($stmt, { Slice => {} }, @bind)->[0];
+        $result->{_where} = $c;
+        $result->{_from} = $self->{table};
+        $result->{_schema} = $self->schema;
         
-        return bless $rs, 'DBIx::Inline::Result';
+        return bless $result, 'DBIx::Inline::Result';
     }
     else { return 0; }    
 }

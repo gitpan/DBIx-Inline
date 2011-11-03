@@ -8,7 +8,7 @@ use base qw/
     DBIx::Inline::Result
 /;
 
-$DBIx::Inline::VERSION = '0.09';
+$DBIx::Inline::VERSION = '0.10';
 our $global = {};
 
 =head1 NAME
@@ -17,8 +17,8 @@ DBIx::Inline - DBIx::Class without the class.
 
 =head1 DESCRIPTION
 
-This module is yet another interface to DBI. I liked how L<DBIx::Class> works, separating the results from the resultsets, the resultsets from the results and the schema from everything else. 
-It's tidy, easy to follow and works a treat. I also liked how you can "reuse" queries in resultsets and results without typing them out again and again. However, when I wanted to work on a small 
+This module is yet another interface to DBI. I like how L<DBIx::Class> works, separating the results from the resultsets, the resultsets from the results and the schema from everything else. 
+It's tidy, easy to follow and works a treat. I also like how you can "reuse" queries in resultsets and results without typing them out again and again. However, when I wanted to work on a small 
 project I found DBIx::Class a little slow and didn't want to keep setting up the classes for it to work. DBIx::Inline attempts follow the way DBIx::Class does things, but more "inline". You 
 still get the reusable queries, Results and ResultSets, but without all the classes to setup. You do lose a lot of functionality that you get with DBIx::Class, but that's not what DBIx::Inline is 
 really about. I wanted it to be faster and not hold your hand with everything, yet still be easy enough to use. 
@@ -37,7 +37,7 @@ DBIx::Inline is great for small projects that do not require a lot of customisat
 
     my $rs = $schema->resultset('my_user_table');
     
-    # create an accessor
+    # create a resultset method
     $rs->method(not_active => sub {
         return shift->search([], { account_status => 'disabled' }, { order => ['id'], rows => 5 });
     });
@@ -157,8 +157,8 @@ sub config {
     use vars qw/$global/;
     my ($class, $file) = @_;
     
-    if ($file) { $global->{config} = $file; }
-    else { return $global->{config}||0; }
+    if ($file) { $global->{config} = $file; return $class }
+    else { return $class; }#$global->{config}||0; }
 }
 
     
@@ -169,7 +169,7 @@ Brad Haywood <brad@geeksware.net>
 
 =head1 LICENSE
 
-Same license as Perl
+You may distribute this code under the same terms as Perl itself.
 
 =cut
 

@@ -2,10 +2,10 @@ NAME
     DBIx::Inline - DBIx::Class without the class.
 
 DESCRIPTION
-    This module is yet another interface to DBI. I liked how DBIx::Class
+    This module is yet another interface to DBI. I like how DBIx::Class
     works, separating the results from the resultsets, the resultsets from
     the results and the schema from everything else. It's tidy, easy to
-    follow and works a treat. I also liked how you can "reuse" queries in
+    follow and works a treat. I also like how you can "reuse" queries in
     resultsets and results without typing them out again and again. However,
     when I wanted to work on a small project I found DBIx::Class a little
     slow and didn't want to keep setting up the classes for it to work.
@@ -32,7 +32,7 @@ SYNOPSIS
 
         my $rs = $schema->resultset('my_user_table');
     
-        # create an accessor
+        # create a resultset method
         $rs->method(not_active => sub {
             return shift->search([], { account_status => 'disabled' }, { order => ['id'], rows => 5 });
         });
@@ -101,5 +101,5 @@ AUTHOR
     Brad Haywood <brad@geeksware.net>
 
 LICENSE
-    Same license as Perl
+    You may distribute this code under the same terms as Perl itself.
 
