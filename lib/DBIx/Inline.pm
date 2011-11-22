@@ -8,7 +8,7 @@ use base qw/
     DBIx::Inline::Result
 /;
 
-$DBIx::Inline::VERSION = '0.10';
+$DBIx::Inline::VERSION = '0.11';
 our $global = {};
 
 =head1 NAME
@@ -134,6 +134,34 @@ sub model {
     bless $dbhx, 'DBIx::Inline::Schema';
 }
 
+=head2 sqlite
+
+Initially load a SQLite database (file). Instead of going through models or dbi string we can just call C<sqlite('file')>.
+
+    package main;
+    
+    use base 'DBIx::Inline';
+
+    my $schema = main->sqlite('/path/to/db.db')->resultset('users');
+
+=cut
+
+sub sqlite {
+    my ($class, $file, $args) = @_;
+
+    $args = {}
+        if ! $args;
+    # we don't care about making sure the file exists
+    # because with sqlite we can just create a new one!
+    my $dbh = DBI->connect(
+        "dbi:SQLite:$file",
+        $args,
+    );
+
+    my $dbx = { dbh => $dbh, schema => $class };
+    bless $dbx, 'DBIx::Inline::Schema';
+}
+
 =head2 config
 
 Sets the location of the configuration (file with the models. The Schema models.. not girls).
@@ -160,8 +188,6 @@ sub config {
     if ($file) { $global->{config} = $file; return $class }
     else { return $class; }#$global->{config}||0; }
 }
-
-    
 
 =head1 AUTHOR
 

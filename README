@@ -80,6 +80,16 @@ SYNOPSIS
   
         my $rs = main->model('AnotherSchema')->resultset('the_table');
 
+  sqlite
+    Initially load a SQLite database (file). Instead of going through models
+    or dbi string we can just call "sqlite('file')".
+
+        package main;
+    
+        use base 'DBIx::Inline';
+
+        my $schema = main->sqlite('/path/to/db.db')->resultset('users');
+
   config
     Sets the location of the configuration (file with the models. The Schema
     models.. not girls). This allows you to have the file anywhere on your

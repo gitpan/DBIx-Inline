@@ -22,4 +22,5 @@ no_index:
 requires:
   DBI: 0
   SQL::Abstract::More: 0
-version: 0.10
+  YAML::Syck: 0
+version: 0.11

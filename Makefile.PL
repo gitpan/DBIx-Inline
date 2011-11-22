@@ -8,6 +8,7 @@ all_from 'lib/DBIx/Inline.pm';
 build_requires 'Test::More' => '0.88';
 requires 'DBI';
 requires 'SQL::Abstract::More';
+requires 'YAML::Syck';
 
 if ($Module::Install::AUTHOR) {
     system("pod2text lib/DBIx/Inline.pm > README")

@@ -5,13 +5,12 @@ package DBIx::Inline::ResultSet;
 DBIx::Inline::ResultSet - Methods for searching and altering tables
 
 =cut
-
 use SQL::Abstract::More;
 
 our $sql = SQL::Abstract::More->new;
 use vars qw/$sql/;
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 =head2 fetch
 
@@ -338,15 +337,9 @@ Creates a ResultSet method on the fly. Use it to create accessors, or shortcuts
 =cut
 
 sub method {
-    my ($self, %args) = @_;
-
-    my $key;
-    for (keys %args) {
-        $key = $_;
-    }
-    *$key = sub { $args{$key}->($self); };
-    
-    bless \*$key, 'DBIx::Inline::ResultSet';
+    my ($self, $name, $sub) = @_;
+    *$name = sub { $sub->(@_) };
+    *{"DBIx::Inline::ResultSet::$name"} = \*$name;
 }
 
 sub schema {
