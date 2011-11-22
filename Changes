@@ -1,3 +1,7 @@
-0.11        22/Nov/2011
+0.12        22/Nov/2011
+            Sorry about the major change, but the Schema method 'resultset' has been changed to 'table'.
+            I do apologize, but I couldn't live with it anymore.. it was a TABLE not a ResultSet.. argh.
+
+0.12        22/Nov/2011
             Added sqlite method to main class. Now you can open a SQLite file 
             without having to go through a model or dbi strings.
