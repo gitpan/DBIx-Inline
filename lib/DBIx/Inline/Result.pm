@@ -11,7 +11,7 @@ our $sql = SQL::Abstract::More->new;
 
 use vars qw/$sql/;
 
-our $VERSION = '0.12';
+our $VERSION = '0.13';
 
 sub method {
     my ($self, %args) = @_;

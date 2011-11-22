@@ -8,7 +8,7 @@ use base qw/
     DBIx::Inline::Result
 /;
 
-$DBIx::Inline::VERSION = '0.12';
+$DBIx::Inline::VERSION = '0.13';
 our $global = {};
 
 =head1 NAME

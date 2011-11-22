@@ -10,7 +10,7 @@ use SQL::Abstract::More;
 our $sql = SQL::Abstract::More->new;
 use vars qw/$sql/;
 
-our $VERSION = '0.12';
+our $VERSION = '0.13';
 
 =head2 fetch
 
@@ -346,6 +346,59 @@ sub schema {
     my $self = shift;
 
     return $self->{dbh};
+}
+
+=head2 search_join
+
+Performs a SQL JOIN to fetch "related" records.
+Say you want to find what books belong to what author. We want to find books matching author ID 2.
+
+    my $authors = $dbi->model('Authors')->table('authors');
+    $authors->search_join([], { authors => 'books', on => [ qw(id author_id) ] }, { id => 2 });
+
+=cut
+
+sub search_join {
+    my ($self, $fields, $args, $where) = @_;
+
+    my ($table1,$table2,$on);
+    if (scalar @$fields == 0) { $fields = '*'; }
+    else { $fields = join q{,}, @$fields; }
+    
+    for (keys %$args) {
+        unless ($_ eq 'on') {
+            $table1 = $_;
+            $table2 = $args->{$_};
+        }
+        
+        if ($_ eq 'on') {
+            $on = $args->{$_};
+        }
+    }
+
+    my ($w_key, $w_val);
+    if ($where) {
+        if (scalar keys %$where > 0) {
+            for (keys %$where) {
+                $w_key = $_;
+                $w_val = $where->{$_};
+            }
+        }
+    }
+    
+    my $stmt = "SELECT $fields FROM $table1 AS a INNER JOIN $table2 AS b ON ( a.$on->[0] = b.$on->[1] )";
+    $stmt .= " WHERE a.$w_key = $w_val"
+        if (scalar keys %$where > 0);
+    
+    my $result = {
+        dbh    => $self->{dbh},
+        result => $self->{dbh}->selectall_arrayref($stmt, { Slice => {} }),
+        table  => $self->{table},
+        primary_key => $self->{primary_key},
+        r       => 'DBIx::Inline::Result',
+        rs      => __PACKAGE__,
+    };
+    return bless $result, 'DBIx::Inline::ResultSet'; 
 }
 
 1;
