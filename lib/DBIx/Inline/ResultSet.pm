@@ -5,6 +5,7 @@ package DBIx::Inline::ResultSet;
 DBIx::Inline::ResultSet - Methods for searching and altering tables
 
 =cut
+use Goose;
 use SQL::Abstract::More;
 
 our $sql = SQL::Abstract::More->new;

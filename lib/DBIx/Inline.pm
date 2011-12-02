@@ -9,7 +9,7 @@ extends qw/
     DBIx::Inline::Result
 /;
 
-$DBIx::Inline::VERSION = '0.15';
+$DBIx::Inline::VERSION = '0.16';
 our $global = {};
 
 =head1 NAME
@@ -121,6 +121,26 @@ The syntax is very basic and uses a simple YAML file, making it easy to move aro
         print $row->name;
     }
 
+As of 0.15 you can now use related tables. It basically does a search_join in a convenient accessor for you. The accessor search is *very* limited, allowing only one key.
+
+    # inline.yml
+    AnotherSchema:
+      connect: 'Pg:host=localhost;dbname=foo'
+      user: 'myuser'
+      pass: 'pass'
+      related:
+        authors: 'id <-> books(authors_id)'
+
+    # then in your code
+    my $rs = $c->model('AnotherSchema')->resultset('authors');
+    my $books = $rs->authors({ id => 3 }); # search for all books by author with id of 3
+
+    # now use it as any normal resultset
+    while( my $row = $books->next ) {
+        $row->load_accessors;
+        print $row->book_title;
+    }
+
 =cut
 
 sub model {
@@ -152,6 +172,23 @@ sub model {
         # get columns from model file?
         
         return $dbhx->resultset($rs)->search([], {});
+    }
+
+    if (exists $yaml->{$model}->{related}) {
+        if (scalar keys %{$yaml->{$model}->{related}} > 0) {
+            foreach my $relate (keys %{$yaml->{$model}->{related}}) {
+                my $relation = $yaml->{$model}->{related}->{$relate};
+                if ($relation =~ /^(\w+)\s*?<\->\s*?(\w+)\s*?\(\s*?(\w+)\s*?\)$/) {
+                    my $relate_table = $2;
+                    my $relation_id = $1;
+                    my $related_id = $3;
+                    DBIx::Inline::ResultSet->create( $relate => sub {
+                        my ($self, $args) = @_;
+                        return $self->search_join([], { $relate => $relate_table, on => [$relation_id, $related_id] }, $args||{} );
+                    });
+                }
+            }
+        }
     }
     
     bless $dbhx, 'DBIx::Inline::Schema';

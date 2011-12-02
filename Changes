@@ -1,3 +1,6 @@
+0.16        02/Dec/2011
+            Added 'related' option to config file.
+
 0.15        02/Dec/2011
             Altered 'model' to let you add a resultset to the models file. Just use 'resultset: YourTableName' and it will automatically load it for you.
             This will also be in the documentation, too.
