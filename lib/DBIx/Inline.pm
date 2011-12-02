@@ -9,7 +9,7 @@ extends qw/
     DBIx::Inline::Result
 /;
 
-$DBIx::Inline::VERSION = '0.14';
+$DBIx::Inline::VERSION = '0.15';
 our $global = {};
 
 =head1 NAME
@@ -28,17 +28,20 @@ DBIx::Inline is great for small projects that do not require a lot of customisat
 
 =head1 SYNOPSIS
 
-    package main;
+    package MyDB;
 
     use base 'DBIx::Inline';
 
-    my $schema = main->connect(
-        dbi => 'SQLite:test.db'
+    my $rs = MyDB->model('Foo')->all; # Read up about models to see what this does
+    # or..
+    my $rs = MyDB->sqlite('/some/sqlite.db')->resultset('users')->all;
+    # or..
+    my $rs = MyDB->connect(
+        dbi => 'SQLite:/some/sqlite.db',
     );
-
-    my $rs = $schema->resultset('my_user_table');
+    $rs = $rs->resultset('users');
     
-    # create a resultset method
+    # create a resultset method on-the-fly
     $rs->method(not_active => sub {
         return shift->search([], { account_status => 'disabled' }, { order => ['id'], rows => 5 });
     });
@@ -90,9 +93,9 @@ sub connect {
 
 =head2 model
 
-This method needs a lot of work, but it functions at the moment. And I like it. 
-Instead of calling the connect method in every file, you can share the model by putting it in 
-inline.yml (which it looks for by default), or setting ->config.
+Models make your life easier when you need to reuse a specific connection. You can even go so far as specifying a ResultSet to use by default.
+By default, DBIx::Inline will look for inline.yml, unless you have configured a different models file with C<config('file.yml')>.
+The syntax is very basic and uses a simple YAML file, making it easy to move around if you need to.
 
     # inline.yml
     ---
@@ -104,10 +107,19 @@ inline.yml (which it looks for by default), or setting ->config.
       user: 'myuser'
       pass: 'pass'
 
+    WithResultSet:
+      connect: 'SQLite:test.db'
+      resultset: 'users'
+ 
     # test.pl
     package main;
   
     my $rs = main->model('AnotherSchema')->resultset('the_table');
+    my $rs2 = main->model('WithResultset'); # that's all we need!
+    while(my $row = $rs2->next) {
+        $row->load_accessors;
+        print $row->name;
+    }
 
 =cut
 
@@ -132,6 +144,16 @@ sub model {
     );
 
     my $dbhx = { dbh => $dbh, schema => $class };
+    
+    if (exists $yaml->{$model}->{resultset}) {
+        
+        bless $dbhx, 'DBIx::Inline::Schema';
+        my $rs = $yaml->{$model}->{resultset};
+        # get columns from model file?
+        
+        return $dbhx->resultset($rs)->search([], {});
+    }
+    
     bless $dbhx, 'DBIx::Inline::Schema';
 }
 
@@ -179,6 +201,11 @@ This allows you to have the file anywhere on your system and you can rename it t
 
     main->config ('/var/schema/myschemas.yml');
     my $schema = main->model('Foo');
+
+You can even chain C<config> to C<model> if you want.
+
+    my $schema = main->config('/var/schema/myschemas.yml')->model('Foo');
+
 
 =cut
 

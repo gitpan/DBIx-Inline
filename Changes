@@ -1,3 +1,7 @@
+0.15        02/Dec/2011
+            Altered 'model' to let you add a resultset to the models file. Just use 'resultset: YourTableName' and it will automatically load it for you.
+            This will also be in the documentation, too.
+
 0.14        02/Dec/2011
             Hopefully fixed broken test. Changed the test module to Test::Lite.
             I honestly hope this doesn't screw anyone over, but table is now, again, resultset (Won't happen again. Promise).
