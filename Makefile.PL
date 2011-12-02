@@ -5,10 +5,13 @@ use warnings;
 name 'DBIx-Inline';
 all_from 'lib/DBIx/Inline.pm';
 
-build_requires 'Test::More' => '0.88';
+test_requires 'Test::Lite';
 requires 'DBI';
+requires 'DBD::SQLite';
 requires 'SQL::Abstract::More';
 requires 'YAML::Syck';
+
+auto_install();
 
 if ($Module::Install::AUTHOR) {
     system("pod2text lib/DBIx/Inline.pm > README")

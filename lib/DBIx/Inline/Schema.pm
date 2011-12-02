@@ -1,9 +1,9 @@
 package DBIx::Inline::Schema;
 use base 'DBIx::Inline::ResultSet';
 
-our $VERSION = '0.13';
+our $VERSION = '0.14';
 
-sub table {
+sub resultset {
     my ($self, $table) = @_;
 
     my $pkg = "DBIx::Inline::ResultSet";

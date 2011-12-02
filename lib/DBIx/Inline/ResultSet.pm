@@ -10,7 +10,7 @@ use SQL::Abstract::More;
 our $sql = SQL::Abstract::More->new;
 use vars qw/$sql/;
 
-our $VERSION = '0.13';
+our $VERSION = '0.14';
 
 =head2 fetch
 

@@ -1,3 +1,7 @@
+0.14        02/Dec/2011
+            Hopefully fixed broken test. Changed the test module to Test::Lite.
+            I honestly hope this doesn't screw anyone over, but table is now, again, resultset (Won't happen again. Promise).
+
 0.13        22/Nov/2011
             Added the 'search_join' resultset method. Check out L<DBIx::Inline::ResultSet> for more information
 

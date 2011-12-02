@@ -1,14 +1,15 @@
 package DBIx::Inline;
 
+use Goose qw/:Class/;
 use DBI;
 
-use base qw/
+extends qw/
     DBIx::Inline::Schema
     DBIx::Inline::ResultSet
     DBIx::Inline::Result
 /;
 
-$DBIx::Inline::VERSION = '0.13';
+$DBIx::Inline::VERSION = '0.14';
 our $global = {};
 
 =head1 NAME

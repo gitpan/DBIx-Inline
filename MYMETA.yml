@@ -4,7 +4,7 @@ author:
   - 'Brad Haywood <brad@geeksware.net>'
 build_requires:
   ExtUtils::MakeMaker: 6.36
-  Test::More: 0.88
+  Test::Lite: 0
 configure_requires:
   ExtUtils::MakeMaker: 0
 distribution_type: module
@@ -20,7 +20,8 @@ no_index:
     - t
     - inc
 requires:
+  DBD::SQLite: 0
   DBI: 0
   SQL::Abstract::More: 0
   YAML::Syck: 0
-version: 0.13
+version: 0.14
