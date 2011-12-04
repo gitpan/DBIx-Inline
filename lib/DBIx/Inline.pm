@@ -9,7 +9,7 @@ extends qw/
     DBIx::Inline::Result
 /;
 
-$DBIx::Inline::VERSION = '0.16';
+$DBIx::Inline::VERSION = '0.17';
 our $global = {};
 
 =head1 NAME

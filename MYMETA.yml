@@ -6,10 +6,9 @@ build_requires:
   ExtUtils::MakeMaker: 6.36
   Test::Lite: 0
 configure_requires:
-  ExtUtils::MakeMaker: 0
-distribution_type: module
+  ExtUtils::MakeMaker: 6.36
 dynamic_config: 0
-generated_by: 'ExtUtils::MakeMaker version 6.57_05'
+generated_by: 'Module::Install version 1.04, CPAN::Meta::Converter version 2.112150'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -17,11 +16,13 @@ meta-spec:
 name: DBIx-Inline
 no_index:
   directory:
-    - t
     - inc
+    - t
 requires:
   DBD::SQLite: 0
   DBI: 0
   SQL::Abstract::More: 0
   YAML::Syck: 0
-version: 0.16
+resources:
+  license: http://dev.perl.org/licenses/
+version: 0.17
