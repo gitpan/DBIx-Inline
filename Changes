@@ -1,5 +1,6 @@
-0,17        04/Dec/2011
-            Made some changes to the documentation.
+0.18        06/Dec/2011
+            Fixed problem where you could not have a relationships and resultsets in the same model file.
+            Added option 'model' to config file to "reuse" a models connection inside the same config.
 
 0.16        02/Dec/2011
             Added 'related' option to config file.

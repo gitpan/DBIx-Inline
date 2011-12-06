@@ -2,7 +2,7 @@ package DBIx::Inline::Manual;
 
 =head1 NAME
 
-DBIx::Inline::Manual - Recipes for DBIx::Inline
+DBIx::Inline::Manual - A manual for DBIx::Inline
 
 =head1 DESCRIPTION
 
@@ -15,15 +15,14 @@ own manual.
 
 B<Connecting>
 
-There are a few ways to begin using DBIx::Inline - using models, connecting directly within your package or using C<sqlite>.
-If you're wanting to reuse the same schema over and over again you're best method would to create a YAML file, put your 
+There are two ways to begin using DBIx::Inline - using models, or connecting directly within your package.
+If you're wanting to reuse the same schema over and over again you're best method would to create a file called inline.yml, put your 
 configuration in there and reuse the model when you need it. If it's just going to be a small once-off, it may be easier to just 
-connect directly. If, however, you're wanting a basic SQLite based connection, using the C<sqlite> method may be right for you.
+connect directly.
 
 B<Using Models>
 
-A simple YAML file will look like following. C<DBIx::Inline> will search for inline.yml by default, but you can rename it as anything 
-then call it with C<config('/path/to/file.yml')> afterwards.
+A simple inline.yml file will look like this
 
   ---
   MySchema:
@@ -52,9 +51,6 @@ You can also use B<config> to move the config somewhere else..
   my $schema = main->model('Foo');
 
 We successfully now have two schemas running in the same package. The first one returns a schema, the second one chained a resultset onto it.
-You can also chain the config onto the model if you wish.
-
-    my $rs = main->config('/path/to/config.yml')->model('Foo')->resultset('this');
 
 The other way is connecting directly.
 
@@ -190,56 +186,5 @@ If you pass arguments after load_accessors to any of the subroutines it creates 
 
   $result->load_accesors;
   $result->name('New Name');
-
-=head2 Using models in more depth
-
-Models can play a huge part with DBIx::Inline, if you let them. You assign a resultset to a model in the config file, or even 
-create a relationship between two tables.
-
-B<Assigning ResultSets>
-
-Let's assign a resultset by default.
-
-    ---
-    User:
-      connect: 'SQLite:/path/to/db'
-      resultset: users
-    
-    Foo:
-      connect: 'SQLite:/path/to/db'
-
-Above we created two models that point to the same database. The C<User> model is simply a shortcut to the users resultset, so we can ..
-
-    my $rs = main->model('User'); # we now have the complete list of users
-
-Without the resultset included we could use the C<Foo> model.
-
-    my $rs = main->model('Foo')->resultset('users')->all;
-
-B<Using Relationships>
-
-Relationships are very handy because it takes care of joining for you. As an example, if I had two tables C<authors> and C<books>, and I wanted to see what 
-books were written by a particular author there are a few ways I could go about this: Multiple queries, a SQL Join or I could use relationships in my model.
-Let's take a look.
-
-    ---
-    Author:
-      connect: 'SQLite:/path/to/db'
-      related:
-        authors: 'id <-> books(author_id)'
-
-To break it down, C<related> tells DBIx::Inline we're going to use a relationship. The first key C<authors> is the main table we want to lookup.
-C<id> is the column name in C<authors> we want to match, C<books> is the table to search for the related information in, then the C<author_id> refers to the authors id.
-Once you do this, DBIx::Inline will create an accessor called C<authors> (or whatever you called your main related table) that merges the data from the C<books> table with the 
-C<authors> table, only returning the books with whatever search arguments you pass to the accessor.
-
-    my $authors = main->model('Author')->resultset('authors');
-    my $books = $authors->authors({ id => 2 });
-    # we now have all the books written by the Author with ID of 2
-    while(my $row = $books->next) {
-        $row->load_accessors;
-        print $row->book_title; # The title of the book from the books table
-        print $row->author_name; # The Authors name from the authors table
-    }
 
 =cut

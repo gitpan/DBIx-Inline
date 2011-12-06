@@ -9,7 +9,7 @@ extends qw/
     DBIx::Inline::Result
 /;
 
-$DBIx::Inline::VERSION = '0.17';
+$DBIx::Inline::VERSION = '0.18';
 our $global = {};
 
 =head1 NAME
@@ -141,6 +141,24 @@ As of 0.15 you can now use related tables. It basically does a search_join in a 
         print $row->book_title;
     }
 
+As of 0.17 you can now resuse a models connection.
+
+    ---
+    MainDB:
+      connect: 'Pg:host=localhost;dbname=thisdb'
+      user: 'foo'
+      pass: 'bar'
+    
+    Author:
+      model: MainDB
+      resultset: authors
+      related:
+        authors: 'id <-> books(author_id)'
+   
+    BooK:
+      model: MainDB
+      resultset: books
+
 =cut
 
 sub model {
@@ -157,23 +175,26 @@ sub model {
     die "No such model '$model'\n"
         if ! exists $yaml->{$model};
     
-    my $dbh = DBI->connect(
-        'dbi:' . $yaml->{$model}->{connect},
-        $yaml->{$model}->{user}||undef,
-        $yaml->{$model}->{pass}||undef,
-    );
+    my $dbh;
+    
+    if (exists $yaml->{$model}->{model}) {
+        my $use_model = $yaml->{$model}->{model};
+        $dbh = DBI->connect(
+            'dbi:' . $yaml->{$use_model}->{connect},
+            $yaml->{$use_model}->{user}||undef,
+            $yaml->{$use_model}->{pass}||undef,
+        );
+    }
+    else {
+        $dbh = DBI->connect(
+            'dbi:' . $yaml->{$model}->{connect},
+            $yaml->{$model}->{user}||undef,
+            $yaml->{$model}->{pass}||undef,
+        );
+    }
 
     my $dbhx = { dbh => $dbh, schema => $class };
     
-    if (exists $yaml->{$model}->{resultset}) {
-        
-        bless $dbhx, 'DBIx::Inline::Schema';
-        my $rs = $yaml->{$model}->{resultset};
-        # get columns from model file?
-        
-        return $dbhx->resultset($rs)->search([], {});
-    }
-
     if (exists $yaml->{$model}->{related}) {
         if (scalar keys %{$yaml->{$model}->{related}} > 0) {
             foreach my $relate (keys %{$yaml->{$model}->{related}}) {
@@ -191,6 +212,15 @@ sub model {
         }
     }
     
+    if (exists $yaml->{$model}->{resultset}) {
+        
+        bless $dbhx, 'DBIx::Inline::Schema';
+        my $rs = $yaml->{$model}->{resultset};
+        # get columns from model file?
+        
+        return $dbhx->resultset($rs)->search([], {});
+    }
+
     bless $dbhx, 'DBIx::Inline::Schema';
 }
 

@@ -116,6 +116,24 @@ SYNOPSIS
             print $row->book_title;
         }
 
+    As of 0.17 you can now resuse a models connection.
+
+        ---
+        MainDB:
+          connect: 'Pg:host=localhost;dbname=thisdb'
+          user: 'foo'
+          pass: 'bar'
+    
+        Author:
+          model: MainDB
+          resultset: authors
+          related:
+            authors: 'id <-> books(author_id)'
+   
+        BooK:
+          model: MainDB
+          resultset: books
+
   sqlite
     Initially load a SQLite database (file). Instead of going through models
     or dbi string we can just call "sqlite('file')".
