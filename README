@@ -82,7 +82,8 @@ SYNOPSIS
 
         WithResultSet:
           connect: 'SQLite:test.db'
-          resultset: 'users'
+          table: 'users'
+          columns: id name status date_created(datetime)
  
         # test.pl
         package main;
@@ -132,7 +133,24 @@ SYNOPSIS
    
         BooK:
           model: MainDB
-          resultset: books
+          table: books
+
+    0.19 offers the ability to add columns. Doing this will create an
+    accessor to that result. You can even return a DateTime object on time
+    results by adding "(datetime)" at the end of the column.
+
+        ---
+        Customer:
+          model: MyModel
+          table: customers
+          columns: id name status date_created(datetime) suspended(datetime)
+
+        # sql.pl
+        package MyDB;
+ 
+        my $customers = MyDB->model('Customer')->all;
+        print $customers->last->date_created;      # prints DateTime object
+        print $customers->last->date_created->ymd; # you can then call DateTime methods on the object
 
   sqlite
     Initially load a SQLite database (file). Instead of going through models

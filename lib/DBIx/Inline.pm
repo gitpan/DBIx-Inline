@@ -1,7 +1,10 @@
 package DBIx::Inline;
 
-use Goose qw/:Class/;
+use DateTime;
+use Goose ':Antlers'; 
 use DBI;
+
+has 'columns' => ( is => 'rw', default => ['*'] );
 
 extends qw/
     DBIx::Inline::Schema
@@ -9,7 +12,7 @@ extends qw/
     DBIx::Inline::Result
 /;
 
-$DBIx::Inline::VERSION = '0.18';
+$DBIx::Inline::VERSION = '0.19';
 our $global = {};
 
 =head1 NAME
@@ -109,7 +112,8 @@ The syntax is very basic and uses a simple YAML file, making it easy to move aro
 
     WithResultSet:
       connect: 'SQLite:test.db'
-      resultset: 'users'
+      table: 'users'
+      columns: id name status date_created(datetime)
  
     # test.pl
     package main;
@@ -157,7 +161,22 @@ As of 0.17 you can now resuse a models connection.
    
     BooK:
       model: MainDB
-      resultset: books
+      table: books
+
+0.19 offers the ability to add columns. Doing this will create an accessor to that result. You can even return a DateTime object on time results by adding C<(datetime)> at the end of the column.
+
+    ---
+    Customer:
+      model: MyModel
+      table: customers
+      columns: id name status date_created(datetime) suspended(datetime)
+
+    # sql.pl
+    package MyDB;
+ 
+    my $customers = MyDB->model('Customer')->all;
+    print $customers->last->date_created;      # prints DateTime object
+    print $customers->last->date_created->ymd; # you can then call DateTime methods on the object
 
 =cut
 
@@ -205,17 +224,65 @@ sub model {
                     my $related_id = $3;
                     DBIx::Inline::ResultSet->create( $relate => sub {
                         my ($self, $args) = @_;
+                        $self->{table} = $relate;
+                        $self->{where} = $args;
                         return $self->search_join([], { $relate => $relate_table, on => [$relation_id, $related_id] }, $args||{} );
                     });
                 }
             }
         }
     }
-    
-    if (exists $yaml->{$model}->{resultset}) {
+
+    if (exists $yaml->{$model}->{columns}) {
+        my @cols = split ' ', $yaml->{$model}->{columns};
+        my $datetime = 0;
+        for my $c (@cols) {
+            if ($c =~ /(.+)\(datetime\)/) { $datetime = 1; $c = $1; }
+            if ($datetime) {
+                DBIx::Inline::Result->create( $c => sub {
+                    my ($self, $a) = @_;
+                    my $result = $self->{$c};
+                    my $sql = new SQL::Abstract::More;
+                    my $where = $self->{_where};
+                    my ($year, $month, $day, $hour, $min, $sec, $dt);
+                    if ($result =~ /^(.+)\-(.+)\-(.+) (.+):(.+):(.+)/) {
+                        ($year, $month, $day, $hour, $min, $sec) = ($1, $2, $3, $4, $5, $6); 
+                        $dt = DateTime->new( day => $day, month => $month, year => $year, hour => $hour, minute => $min, second => $sec );
+                    }
+                    elsif ($result =~ /^(.+)\-(.+)\-(.+)$/) {
+                        ($year, $month, $day) = ($1, $2, $3);
+                        $dt = DateTime->new( day => $day, month => $month, year => $year );
+                    }
+                    
+                    return $dt;
+                });
+            }
+            else {
+                DBIx::Inline::Result->create( $c => sub {
+                    my ($self, $a) = @_;
+                    my $result = $self->{$c};
+                    my $sql = new SQL::Abstract::More;
+                    my $where = $self->{_where};
+                    if (! $a) {
+                        return $result;
+                    }
+                    else {
+                        my ($stmt, @bind) = $sql->update($table, { $key => $a }, $where);
+                        my $sth = $self->_dbh->prepare($stmt);
+                        $sth->execute(@bind);
+                        $self->{$key} = $a;
+                        return $self;
+                    }
+                });
+            }
+            $datetime = 0;
+        }
+    }
+   
+    if (exists $yaml->{$model}->{table}) {
         
         bless $dbhx, 'DBIx::Inline::Schema';
-        my $rs = $yaml->{$model}->{resultset};
+        my $rs = $yaml->{$model}->{table};
         # get columns from model file?
         
         return $dbhx->resultset($rs)->search([], {});

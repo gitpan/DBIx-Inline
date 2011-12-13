@@ -1,3 +1,7 @@
+0.19        13/Dec/2011
+            You can specify 'columns' in the models file now. Any columns listed in there will have accessors set up for them in the Result class.
+            Now, you can even add a DateTime attribute to a specific column or columns. When you do this the result will be in the form of a DateTime object, if possible.
+
 0.18        06/Dec/2011
             Fixed problem where you could not have a relationships and resultsets in the same model file.
             Added option 'model' to config file to "reuse" a models connection inside the same config.

@@ -22,8 +22,9 @@ no_index:
 requires:
   DBD::SQLite: 0
   DBI: 0
+  DateTime: 0
   SQL::Abstract::More: 0
   YAML::Syck: 0
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.18
+version: 0.19

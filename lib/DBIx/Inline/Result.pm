@@ -6,6 +6,7 @@ DBIx::Inline::Result - Class for DBIx::Inline results
 
 =cut 
 
+use Goose ':Antlers';
 use SQL::Abstract::More;
 our $sql = SQL::Abstract::More->new;
 

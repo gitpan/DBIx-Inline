@@ -388,8 +388,11 @@ sub search_join {
     }
     
     my $stmt = "SELECT $fields FROM $table1 AS a INNER JOIN $table2 AS b ON ( a.$on->[0] = b.$on->[1] )";
-    $stmt .= " WHERE a.$w_key = $w_val"
-        if (scalar keys %$where > 0);
+    if (scalar keys %$where > 0) {
+        $stmt .= " WHERE a.$w_key = $w_val";
+        $stmt .= "AND (" . $self->{where} . ")"
+            if exists $self->{where};
+    }
     
     my $result = {
         dbh    => $self->{dbh},

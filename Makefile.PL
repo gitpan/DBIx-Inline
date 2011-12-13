@@ -10,6 +10,7 @@ requires 'DBI';
 requires 'DBD::SQLite';
 requires 'SQL::Abstract::More';
 requires 'YAML::Syck';
+requires 'DateTime';
 
 auto_install();
 
